@@ -216,13 +216,17 @@ declare function  notFound($queryParams) {
  : this function built document node with dbName and path
  :
  : @param $queryParams the query params
- : @return one or several document-node according to dbName and path
+ : @return one or several document-node according to dbName or current project and path
  :)
 declare function getDb($queryParams as map(*)) as document-node()* {
-  let $dbName := getProjectDB($queryParams('project'))
+  let $param := $queryParams('dbName')
+  let $dbName := 
+    if ($param) then $param
+    else getProjectDB($queryParams('project'))
   let $path := $queryParams('path')
   return
     if ($path)
     then db:open($dbName, $path)
     else db:open($dbName)
 };
+
