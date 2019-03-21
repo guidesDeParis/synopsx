@@ -46,7 +46,7 @@
                <hi>Install BaseX:</hi>
                <list>
                   <item>Go to http://basex.org/</item>
-                  <item>Click on "Download BaseX 8.3"</item>
+                  <item>Click on "Download BaseX"</item>
                </list>
             </p>
                  <p><hi>Add Saxon processor HE to BaseX:</hi>
@@ -90,7 +90,7 @@
                <hi>Installer BaseX :</hi>
               <list> 
                  <item>Allez sur : http://basex.org/</item>
-                  <item>Cliquez sur : "Download BaseX 8.3"</item>
+                  <item>Cliquez sur : "Download BaseX"</item>
               </list>
             </p>
              <p><hi>Ajouter le processeur Saxon HE à BaseX :</hi>
@@ -103,7 +103,7 @@
             <p>
                <hi>Installer SynopsX :</hi>
                <list>
-                  <item>Allez sur : https://github.com/ahn-ens-lyon/synopsx</item><!--  a la fin ce sera un répo synopsX propre et non le répo de l'AHN -->
+                  <item>Allez sur : https://github.com/synopsx/synopsx</item><!--  a la fin ce sera un répo synopsX propre et non le répo de l'AHN -->
                   <item>Si vous n’avez pas d'applicatif github cliquez sur : "download Zip" </item>
                   <item>déziper synopsx-dev.zip</item>
                   <item>renommer le dossier "synopsx-dev" en "synopsx"</item> <!--  A la fin ce sera la branche master et non dev -->
