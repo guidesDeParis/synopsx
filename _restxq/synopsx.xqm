@@ -26,7 +26,7 @@ module namespace synopsx.synopsx = 'synopsx.synopsx' ;
  :)
 
 import module namespace rest = "http://exquery.org/ns/restxq";
-import module namespace Session = 'http://basex.org/modules/session';
+import module namespace session = 'http://basex.org/modules/session';
 import module namespace G = 'synopsx.globals' at '../globals.xqm' ;
 import module namespace synopsx.models.tei = 'synopsx.models.tei' at '../models/tei.xqm' ;
 import module namespace synopsx.models.synopsx = 'synopsx.models.synopsx' at '../models/synopsx.xqm' ;
@@ -207,7 +207,7 @@ declare
   else
   try {
     user:check($name, $pass),
-    Session:set('id', $name),
+    session:set('id', $name),
     web:redirect("/synopsx")
   } catch user:* {
     web:redirect("/synopsx/login")
@@ -217,30 +217,30 @@ declare
 declare
   %rest:path("/synopsx/logout")
 function logout() {
-  Session:delete('id'),
+  session:delete('id'),
   web:redirect("/synopsx")
 };
 
 declare %perm:check('/synopsx/install', '{$perm}') function check-install($perm) {
-  if (fn:empty(Session:get('id'))) then  web:redirect("/synopsx/login")
+  if (fn:empty(session:get('id'))) then  web:redirect("/synopsx/login")
   else
-  let $user := Session:get('id')
+  let $user := session:get('id')
   where fn:not(user:list-details($user)/@permission = $perm?allow)
   return web:redirect("/synopsx/login")
 };
 
 declare %perm:check('/synopsx/config', '{$perm}') function check-config($perm) {
-   if (fn:empty(Session:get('id'))) then  web:redirect("/synopsx/login")
+   if (fn:empty(session:get('id'))) then  web:redirect("/synopsx/login")
   else
-  let $user := Session:get('id')
+  let $user := session:get('id')
   where fn:not(user:list-details($user)/@permission = $perm?allow)
   return web:redirect("/synopsx/login")
 };
 
 declare %perm:check('/synopsx/create-project', '{$perm}') function check-create-project($perm) {
-  if (fn:empty(Session:get('id'))) then  web:redirect("/synopsx/login")
+  if (fn:empty(session:get('id'))) then  web:redirect("/synopsx/login")
   else
-  let $user := Session:get('id')
+  let $user := session:get('id')
   where fn:not(user:list-details($user)/@permission = $perm?allow)
   return web:redirect("/synopsx/login")
 };
