@@ -2,7 +2,7 @@ xquery version '3.0' ;
 module namespace synopsx.synopsx = 'synopsx.synopsx' ;
 
 (:~
- : This module is the RESTXQ for SynopsX's installation processes
+ : This module is the RESTXQ for SynopsX’s installation process
  :
  : @author synopsx team
  : @since 2014-11-10 
@@ -25,8 +25,8 @@ module namespace synopsx.synopsx = 'synopsx.synopsx' ;
  :
  :)
 
-import module namespace rest = "http://exquery.org/ns/restxq";
-import module namespace session = 'http://basex.org/modules/session';
+import module namespace rest = 'http://exquery.org/ns/restxq' ;
+import module namespace session = 'http://basex.org/modules/session' ;
 import module namespace G = 'synopsx.globals' at '../globals.xqm' ;
 import module namespace synopsx.models.tei = 'synopsx.models.tei' at '../models/tei.xqm' ;
 import module namespace synopsx.models.synopsx = 'synopsx.models.synopsx' at '../models/synopsx.xqm' ;
@@ -35,21 +35,24 @@ import module namespace synopsx.mappings.htmlWrapping = 'synopsx.mappings.htmlWr
 
 declare default function namespace 'synopsx.synopsx' ;
 
-declare variable $synopsx.synopsx:project := 'synopsx';
+declare variable $synopsx.synopsx:project := 'synopsx' ;
 declare variable $synopsx.synopsx:db := synopsx.models.synopsx:getProjectDB($synopsx.synopsx:project) ;
+
 (:~
  : this resource function redirects to the synopsx' home
  :)
 declare 
   %rest:path('/synopsx')
 function index() {
-  web:redirect(if(db:exists("synopsx"))
-              then '/synopsx/home' 
-              else '/synopsx/install')
+  web:redirect(
+    if (db:exists('synopsx'))
+      then '/synopsx/home' 
+      else '/synopsx/install'
+    )
 };
 
 (:~
- : this resource function is the synopsx' home
+ : this resource function is the installation page
  : @todo give contents
  :)
 declare 
@@ -58,50 +61,50 @@ declare
   %output:html-version('5.0')
   %updating
 function install(){
-  db:create("synopsx", ($G:FILES||"xml/synopsx.xml",$G:FILES||"xml/config.xml"), (), map {'chop':fn:false()}),
-  db:create("example", ($G:FILES||"xml/teiSample.xml", $G:FILES||"xml/eadSample.xml"), (), map {'chop':fn:false()}),
+  db:create('synopsx', ($G:FILES || 'xml/synopsx.xml', $G:FILES || 'xml/config.xml'), (), map {'chop':fn:false()}),
+  db:create('example', ($G:FILES || 'xml/teiSample.xml', $G:FILES || 'xml/eadSample.xml'), (), map {'chop':fn:false()}),
   update:output(web:redirect("/synopsx/home"))
 };
 
 (:~
- : this resource function is the synopsx' home
+ : this resource function is the synopsx’ home
  : @todo give contents
  :)
 declare 
   %rest:path('/synopsx/home')
   %output:method('html')
   %output:html-version('5.0')
-function home(){
+function home() {
   let $queryParams := map {
     'project' : $synopsx.synopsx:project,
     'dbName' :  $synopsx.synopsx:db,
-    'model' : 'tei' ,
+    'model' : 'tei',
     'function' : 'queryTEI',
-    'id':'synopsx'
+    'id' : 'synopsx'
     }
   let $outputParams := map {
     'lang' : 'fr',
     'layout' : 'synopsx.xhtml',
     'pattern' : 'inc_defaultItem.xhtml',
-    'xquery':'tei2html'
+    'xquery' : 'tei2html'
     }  
  return synopsx.models.synopsx:htmlDisplay($queryParams, $outputParams)
 };
 
 declare 
-  %rest:GET
-  %perm:allow("admin")
   %rest:path('/synopsx/config')
+  %rest:GET
+  %perm:allow('admin')
   %output:method('html')
   %output:html-version('5.0')
-function config() as element() {
+function config() {
   let $queryParams := map {
     'project' : $synopsx.synopsx:project,
     'dbName' :  $synopsx.synopsx:db,
     'model' : 'synopsx' ,
     'function' : 'getProjectsList'
     }
-  let $outputParams :=map {
+  let $outputParams := map {
     'lang' : 'fr',
     'layout' : 'config.xhtml',
     'pattern' : 'inc_configItem.xhtml'
@@ -112,29 +115,28 @@ function config() as element() {
 };
 
 declare 
+  %rest:path('/synopsx/config')
   %rest:POST
   %perm:allow('admin')
-  %rest:path('/synopsx/config')
   %output:method('html')
-  %rest:query-param("project",  "{$project}")
+  %rest:query-param('project',  '{$project}')
   %updating
 function config($project) {
     db:create-backup('synopsx'),
-    delete node db:open('synopsx', 'config.xml')//@default, (: supprimer tout attribut défault préexistant :)
+    delete node db:open('synopsx', 'config.xml')//@default, (: delete all preexisting values :)
     insert node (attribute { 'default' } { 'true' }) into db:open('synopsx', 'config.xml')//project[resourceName/text()=$project][1],
-    update:output(web:redirect("/synopsx/config"))  
+    update:output(web:redirect('/synopsx/config'))  
 };
 
 
 declare 
-  %rest:GET
-   %perm:allow('admin')
   %rest:path('/synopsx/create-project')
+  %rest:GET
+  %perm:allow('admin')
   %output:method('html')
   %output:html-version('5.0')
 function create_project() as element() {
-  let $queryParams := map {
-    
+  let $queryParams := map {  
     }
   let $outputParams :=map {
     'lang' : 'fr',
@@ -143,33 +145,37 @@ function create_project() as element() {
  return synopsx.models.synopsx:htmlDisplay($queryParams, $outputParams)
 };
 
-declare 
-  %rest:POST
-   %perm:allow('admin')
+declare
   %rest:path('/synopsx/create-project')
+  %rest:POST
+  %perm:allow('admin')
   %output:method('html')
-  %rest:query-param("project",  "{$project}")
+  %rest:query-param('project',  '{$project}')
   %updating
 function create_project($project) {
   if(db:open('synopsx', 'config.xml')//project[resourceName/text()=$project]) then 
-  update:output(web:redirect("/synopsx/config/unavailable"))
-  else
-      (db:create($project, (), (), map { 'chop': fn:true(), 'textindex': fn:true(),'attrindex': fn:true() }),
-      insert node 
-          <project> 
-            <resourceName>{$project}</resourceName>
-            <dbName>{$project}</dbName>
-          </project>      
-      into db:open('synopsx', 'config.xml')//projects,
-      update:output(web:redirect("/synopsx/config"))
-      )
+  update:output(web:redirect('/synopsx/config/unavailable'))
+  else (
+    db:create($project, (), (), map {
+      'chop': fn:true(), 
+      'textindex' : fn:true(),
+      'attrindex' : fn:true()}
+    ),
+    insert node 
+      <project> 
+        <resourceName>{$project}</resourceName>
+        <dbName>{$project}</dbName>
+      </project>
+    into db:open('synopsx', 'config.xml')//projects,
+    update:output(web:redirect("/synopsx/config"))
+  )
 };
 
 
-declare 
-  %rest:GET
-  %perm:allow("admin")
+declare
   %rest:path('/synopsx/config/{$checkName}')
+  %rest:GET
+  %perm:allow('admin')
   %output:method('html')
   %output:html-version('5.0')
 function create-project($checkName) as element() {
@@ -190,57 +196,84 @@ function create-project($checkName) as element() {
 
 };
 
-(:~ Login page (visible to everyone). :)
+(:~ 
+ : this resource function is a login page (visible to everyone)
+ :)
 declare
-  %rest:path("/synopsx/login")
-  %output:method("html")
+  %rest:path('/synopsx/login')
+  %output:method('html')
+  %output:html-version('5.0')
 function login() {
-    fn:doc($G:HOME || 'templates/login.xhtml')
+  let $queryParams :=map {
+    }
+  let $outputParams :=map {
+    }
+ let $outputParams :=map {
+    'lang' : 'fr',
+    'layout' : 'login.xhtml'
+    }
+ return synopsx.models.synopsx:htmlDisplay($queryParams, $outputParams)
 };
 
+(:~ 
+ : this function check the login
+ :)
 declare
-  %rest:path("/synopsx/login-check")
-  %rest:query-param("name", "{$name}")
-  %rest:query-param("pass", "{$pass}")
-  function login($name, $pass) {
-  if (fn:empty($name)) then  web:redirect("/synopsx/login")
-  else
-  try {
+  %rest:path('/synopsx/login-check')
+  %rest:query-param('name', '{$name}')
+  %rest:query-param('pass', '{$pass}')
+function login($name, $pass) {
+  if (fn:empty($name)) 
+  then  web:redirect('/synopsx/login')
+  else try {
     user:check($name, $pass),
     session:set('id', $name),
-    web:redirect("/synopsx")
-  } catch user:* {
-    web:redirect("/synopsx/login")
+    web:redirect('/synopsx')
+  } 
+  catch user:* {
+    web:redirect('/synopsx/login')
   }
 };
 
+(:~ 
+ : this function logout
+ :)
 declare
-  %rest:path("/synopsx/logout")
+  %rest:path('/synopsx/logout')
 function logout() {
   session:delete('id'),
-  web:redirect("/synopsx")
+  web:redirect('/synopsx')
 };
 
-declare %perm:check('/synopsx/install', '{$perm}') function check-install($perm) {
-  if (fn:empty(session:get('id'))) then  web:redirect("/synopsx/login")
+declare 
+  %perm:check('/synopsx/install', '{$perm}') 
+function check-install($perm) {
+  if (fn:empty(session:get('id'))) 
+  then  web:redirect("/synopsx/login")
   else
-  let $user := session:get('id')
-  where fn:not(user:list-details($user)/@permission = $perm?allow)
-  return web:redirect("/synopsx/login")
+    let $user := session:get('id')
+    where fn:not(user:list-details($user)/@permission = $perm?allow)
+    return web:redirect('/synopsx/login')
 };
 
-declare %perm:check('/synopsx/config', '{$perm}') function check-config($perm) {
-   if (fn:empty(session:get('id'))) then  web:redirect("/synopsx/login")
-  else
-  let $user := session:get('id')
-  where fn:not(user:list-details($user)/@permission = $perm?allow)
-  return web:redirect("/synopsx/login")
+declare 
+  %perm:check('/synopsx/config', '{$perm}') 
+function check-config($perm) {
+  if (fn:empty(session:get('id'))) 
+  then  web:redirect('/synopsx/login')
+  else 
+    let $user := session:get('id')
+    where fn:not(user:list-details($user)/@permission = $perm?allow)
+    return web:redirect('/synopsx/login')
 };
 
-declare %perm:check('/synopsx/create-project', '{$perm}') function check-create-project($perm) {
-  if (fn:empty(session:get('id'))) then  web:redirect("/synopsx/login")
+declare 
+  %perm:check('/synopsx/create-project', '{$perm}') 
+function check-create-project($perm) {
+  if (fn:empty(session:get('id'))) 
+  then  web:redirect('/synopsx/login')
   else
-  let $user := session:get('id')
-  where fn:not(user:list-details($user)/@permission = $perm?allow)
-  return web:redirect("/synopsx/login")
+    let $user := session:get('id')
+    where fn:not(user:list-details($user)/@permission = $perm?allow)
+    return web:redirect('/synopsx/login')
 };
