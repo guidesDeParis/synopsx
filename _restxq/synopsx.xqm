@@ -94,7 +94,7 @@ function home() {
 declare 
   %rest:path('/synopsx/config')
   %rest:GET
-  %perm:allow('admin')
+  
   %output:method('html')
   %output:html-version('5.0')
 function config() {
@@ -117,7 +117,7 @@ function config() {
 declare 
   %rest:path('/synopsx/config')
   %rest:POST
-  %perm:allow('admin')
+  
   %output:method('html')
   %rest:query-param('project',  '{$project}')
   %updating
@@ -132,7 +132,7 @@ function config($project) {
 declare 
   %rest:path('/synopsx/create-project')
   %rest:GET
-  %perm:allow('admin')
+  
   %output:method('html')
   %output:html-version('5.0')
 function create_project() as element() {
@@ -175,7 +175,7 @@ function create_project($project) {
 declare
   %rest:path('/synopsx/config/{$checkName}')
   %rest:GET
-  %perm:allow('admin')
+  
   %output:method('html')
   %output:html-version('5.0')
 function create-project($checkName) as element() {
@@ -246,7 +246,7 @@ function logout() {
 };
 
 declare 
-  %perm:check('/synopsx/install', '{$perm}') 
+  
 function check-install($perm) {
   if (fn:empty(session:get('id'))) 
   then  web:redirect("/synopsx/login")
@@ -257,7 +257,7 @@ function check-install($perm) {
 };
 
 declare 
-  %perm:check('/synopsx/config', '{$perm}') 
+  
 function check-config($perm) {
   if (fn:empty(session:get('id'))) 
   then  web:redirect('/synopsx/login')
@@ -268,7 +268,7 @@ function check-config($perm) {
 };
 
 declare 
-  %perm:check('/synopsx/create-project', '{$perm}') 
+  
 function check-create-project($perm) {
   if (fn:empty(session:get('id'))) 
   then  web:redirect('/synopsx/login')
