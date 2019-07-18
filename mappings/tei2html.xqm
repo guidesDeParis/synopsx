@@ -28,11 +28,14 @@ declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
 declare default function namespace 'synopsx.mappings.tei2html' ;
 
+declare boundary-space strip ;
+
 (:~
  : this function 
  :)
 declare function entry($node as node()*, $options as map(*)) as item()* {
-  dispatch($node, $options)
+  for $i in $node return 
+  dispatch($i, $options)
 };
 
 (:~
@@ -41,6 +44,10 @@ declare function entry($node as node()*, $options as map(*)) as item()* {
 declare function dispatch($node as node()*, $options as map(*)) as item()* {
   typeswitch($node)
     case text() return $node
+    case element(tei:persName) return persName($node, $options)
+    case element(tei:placeName) return placeName($node, $options)
+    case element(tei:objectName) return objectName($node, $options)
+    case element(tei:fw) return fw($node, $options)
     case element(tei:lb) return lb($node, $options)
     case element(tei:pb) return pb($node, $options)
     case element(tei:hi) return hi($node, $options)
@@ -131,7 +138,7 @@ declare function synopsx.mappings.tei2html:item($node as element(tei:item)+, $op
 };
 
 declare function label($node as element(tei:label)+, $options as map(*)) {
-  <dt>{ passthru($node, $options) }</dt>
+  <span class="bold">{ passthru($node, $options) }</span>
 };
 
 declare function note($node as element(tei:note)+, $options as map(*)) {
@@ -146,7 +153,7 @@ declare function note($node as element(tei:note)+, $options as map(*)) {
           return if ($ref) then $ref else ()
         }</a>
         {passthru($node, $options)}</div>
-    else (<div class='note'>passthru($node, $options)</div>)
+    else (<div class='note'>{passthru($node, $options)}</div>)
 };
 
 declare function formula($node as element(tei:formula), $options as map(*)) {
@@ -181,6 +188,11 @@ declare function idno($node as element(tei:idno), $options as map(*)) {
   else if ($node[@type='url_bio']) then (<a href='{$node}'><i class="fa fa-file-pdf-o"/> [Lire sur Biodiversity Heritage Library]</a>)
   else if ($node[fn:contains(@type, 'url')]) then (<a href='{$node}'><i class="fa fa-file-pdf-o"/> [voir le document]</a>)
   else ()
+};
+
+declare function fw($node as element(tei:fw), $options as map(*)) {
+  if ($node/@type = 'runningHead') then ''
+  else (<span class="pb" stycolor="red">{ passthru($node, $options) }</span>, text{' '})
 };
 
 declare function lb($node as element(tei:lb), $options as map(*)) {
@@ -233,7 +245,7 @@ declare function biblItem($node, $options as map(*)) {
  (:  order by fn:number(fn:substring($x/@xml:id, 15, 4)), fn:substring($x/@xml:id, 20) :)
   return 
     <li id="{$node/@xml:id}">
-      <a class="badge" href="/ampere/publications/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }
+      <a class="badge" href="http://localhost:8984/gdp/bibliography/manifestations/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }
       {if (fn:exists($node/ancestor::tei:listBibl/tei:biblStruct[fn:substring-after(@corresp, '#') = $node/@xml:id]) )
       then <ul>
         {for $f in $node/ancestor::tei:listBibl/tei:biblStruct[@corresp]
@@ -246,7 +258,7 @@ declare function biblItem($node, $options as map(*)) {
   </li>
   
  (:  if ($node[tei:idno[@type='M']])
-   then <li id="{$node/@xml:id}"><a class="badge" href="/ampere/publications/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }</li>
+   then <li id="{$node/@xml:id}"><a class="badge" href="http://localhost:8984/gdp/manifestations/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }</li>
    else ()  :)
 };
 
@@ -296,17 +308,29 @@ declare function persName($node, $options) {
     getName($node, $options)
 };
 
+declare function placeName($node, $options) {
+    getName($node, $options)
+};
+
+declare function objectName($node, $options) {
+   getName($node, $options)
+};
+
 (:~
  : this fonction concatenate surname and forname with a ', '
  :
  : @todo cases with only one element
+ : @todo rewrite persName, placeName, objectName
  :)
 declare function getName($node, $options as map(*)) {
-  if ($node/tei:forename and $node/tei:surname)
-  then (<span class="smallcaps">{$node/tei:surname/text()}</span>, ', ', $node/tei:forename)
-  else if ($node/tei:surname) then <span class="smallcaps">{$node/tei:surname/text()}</span>
-  else if ($node/tei:forename) then $node/tei:surname/text()
-  else passthru($node, $options)
+  switch($node)
+  case ($node/tei:forename and $node/tei:surname) return (<span class="smallcaps">{$node/tei:surname/text()}</span>, ', ', $node/tei:forename)
+  default return 
+    if ($node/fn:name() = 'persName') then <span class="persName">{passthru($node, $options)}</span>
+    else if ($node/fn:name() = 'placeName') then <span class="placeName">{passthru($node, $options)}</span>
+    else if ($node/fn:name() = 'objectName') then <span class="objectName">{passthru($node, $options)}</span>
+    else if ($node/fn:name() = 'orgName') then <span class="orgName">{passthru($node, $options)}</span>
+  else <span class="name">{passthru($node, $options)}</span>
 };
 
 (:~
@@ -353,4 +377,3 @@ declare function getImprint($node, $options as map(*)) {
     if ($page) then ($page, '.')
     else '.'
 };
-
