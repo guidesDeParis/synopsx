@@ -33,9 +33,10 @@ declare boundary-space strip ;
 (:~
  : this function 
  :)
-declare function entry($node as node()*, $options as map(*)) as item()* {
-  for $i in $node return 
-  dispatch($i, $options)
+declare 
+%output:indent('no') 
+function entry($node as node()*, $options as map(*)) as item()* {
+  for $i in $node return dispatch($i, $options)
 };
 
 (:~
@@ -79,13 +80,14 @@ declare function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:teiHeader) return ''
     case element(tei:TEI) return passthru($node, $options)
     case element(tei:said) return said($node, $options)
+    case element(tei:mark) return mark($node, $options)
     default return passthru($node, $options)
 };
 
 (:~
  : This function pass through child nodes (xsl:apply-templates)
  :)
-declare function passthru($nodes as node(), $options as map(*)) as item()* {
+declare %output:indent('no') function passthru($nodes as node(), $options as map(*)) as item()* {
   for $node in $nodes/node()
   return dispatch($node, $options)
 };
@@ -227,6 +229,10 @@ declare function graphic($node as element(tei:graphic), $options as map(*)) {
   if ($node/@url)
   then (<a href='{'/static/img/' || $node/ancestor::tei:TEI//tei:sourceDesc//tei:idno[@type='old'] || '/' || $node/@url}'><img class="displayed" width="400" height="400" src='{'/static/img/' || $node/ancestor::tei:TEI//tei:sourceDesc//tei:idno[@type='old'] || '/' || $node/@url}'/></a>)
   else ()
+};
+
+declare function mark($node as element(tei:mark), $options as map(*)) {
+  <code>{ passthru($node, $options) }</code>
 };
 
 (:~
