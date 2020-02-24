@@ -24,7 +24,7 @@ module namespace synopsx.mappings.tei2html = 'synopsx.mappings.tei2html' ;
  : with SynopsX. If not, see http://www.gnu.org/licenses/
  :)
 
-declare namespace tei = 'http://www.tei-c.org/ns/1.0';
+declare namespace tei = 'http://www.tei-c.org/ns/1.0' ;
 
 declare default function namespace 'synopsx.mappings.tei2html' ;
 
@@ -34,7 +34,7 @@ declare boundary-space strip ;
  : this function 
  :)
 declare 
-%output:indent('no') 
+  %output:indent('no') 
 function entry($node as node()*, $options as map(*)) as item()* {
   for $i in $node return dispatch($i, $options)
 };
@@ -42,9 +42,11 @@ function entry($node as node()*, $options as map(*)) as item()* {
 (:~
  : this function dispatches the treatment of the XML document
  :)
-declare function dispatch($node as node()*, $options as map(*)) as item()* {
+declare 
+  %output:indent('no') 
+function dispatch($node as node()*, $options as map(*)) as item()* {
   typeswitch($node)
-    case text() return $node
+    case text() return $node[fn:normalize-space(.)!='']
     case element(tei:persName) return persName($node, $options)
     case element(tei:placeName) return placeName($node, $options)
     case element(tei:objectName) return objectName($node, $options)
@@ -56,6 +58,7 @@ declare function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:p) return p($node, $options)
     case element(tei:item) return synopsx.mappings.tei2html:item($node, $options)
     case element(tei:label) return label($node, $options)
+    case element(tei:emph) return emph($node, $options)
     case element(tei:list) return list($node, $options)
     case element(tei:head) return head($node, $options)
     case element(tei:div) return div($node, $options)
@@ -87,7 +90,9 @@ declare function dispatch($node as node()*, $options as map(*)) as item()* {
 (:~
  : This function pass through child nodes (xsl:apply-templates)
  :)
-declare %output:indent('no') function passthru($nodes as node(), $options as map(*)) as item()* {
+declare 
+  %output:indent('no') 
+function passthru($nodes as node(), $options as map(*)) as item()* {
   for $node in $nodes/node()
   return dispatch($node, $options)
 };
@@ -181,15 +186,9 @@ declare function hi($node as element(tei:hi)+, $options as map(*)) {
 };
 
 declare function idno($node as element(tei:idno), $options as map(*)) {
-  if ($node[@type='url_pdf'])
-  then (<a href='{$node}'><i class="fa fa-file-pdf-o"/> [Voir le pdf]</a>)
-  else if ($node[@type='url_pdf']) then (<br/>, <a href='{$node}'><i class="fa fa-file-pdf-o"/> [Voir le pdf]</a>)
-  else if ($node[@type='url_gallica']) then (<a href='{$node}'><img src="/static/img/gallica.png"/> [Voir sur Gallica]</a>)
-  else if ($node[@type='url_google']) then (<a href='{$node}'><i class="fa fa-google"/> [Voir sur google]</a>)
-  else if ($node[@type='url_cnum']) then (<a href='{$node}'><i class="fa fa-file-pdf-o"/> [Lire sur le CNUM]</a>)
-  else if ($node[@type='url_bio']) then (<a href='{$node}'><i class="fa fa-file-pdf-o"/> [Lire sur Biodiversity Heritage Library]</a>)
-  else if ($node[fn:contains(@type, 'url')]) then (<a href='{$node}'><i class="fa fa-file-pdf-o"/> [voir le document]</a>)
-  else ()
+  switch ($node)
+  case ($node[@type='todo']) return <em>gallica</em>
+  default return ''
 };
 
 declare function fw($node as element(tei:fw), $options as map(*)) {
@@ -235,6 +234,10 @@ declare function mark($node as element(tei:mark), $options as map(*)) {
   <code>{ passthru($node, $options) }</code>
 };
 
+declare function emph($node as element(tei:emph), $options as map(*)) {
+  <em class="emph">{ passthru($node, $options) }</em>
+};
+
 (:~
  : ~:~:~:~:~:~:~:~:~
  : tei biblio
@@ -251,13 +254,13 @@ declare function biblItem($node, $options as map(*)) {
  (:  order by fn:number(fn:substring($x/@xml:id, 15, 4)), fn:substring($x/@xml:id, 20) :)
   return 
     <li id="{$node/@xml:id}">
-      <a class="badge" href="http://localhost:8984/gdp/bibliography/manifestations/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }
+      <a href="http://localhost:8984/gdp/bibliography/manifestations/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }
       {if (fn:exists($node/ancestor::tei:listBibl/tei:biblStruct[fn:substring-after(@corresp, '#') = $node/@xml:id]) )
       then <ul>
         {for $f in $node/ancestor::tei:listBibl/tei:biblStruct[@corresp]
            where fn:substring-after($f/@corresp, '#') = $node/@xml:id
            (: order by fn:number(fn:substring($x/@xml:id, 15, 4)), substring($x/@xml:id, 20) :)
-           return <li  id="{$f/@xml:id}"><a class="badge">{$node/fn:data(fn:substring-after($f/@xml:id, 'publi_'))}</a>{ passthru($f, $options) }</li>
+           return <li  id="{$f/@xml:id}"><a>{$node/fn:data(fn:substring-after($f/@xml:id, 'publi_'))}</a>{ passthru($f, $options) }</li>
      }
     </ul>
     else ()}
@@ -334,9 +337,9 @@ declare function getName($node, $options as map(*)) {
   default return 
     if ($node/fn:name() = 'persName') then <span class="persName">{passthru($node, $options)}</span>
     else if ($node/fn:name() = 'placeName') then <span class="placeName">{passthru($node, $options)}</span>
-    else if ($node/fn:name() = 'objectName') then <span class="objectName">{passthru($node, $options)}</span>
-    else if ($node/fn:name() = 'orgName') then <span class="orgName">{passthru($node, $options)}</span>
-  else <span class="name">{passthru($node, $options)}</span>
+    else if ($node/fn:name() = 'objectName') then <span class="objectName">{passthru($node, $options)}</span> 
+    else if ($node/fn:name() = 'orgName') then <span class="orgName">{passthru($node, $options)}</span> 
+  else <span class="name">{passthru($node, $options)}</span> 
 };
 
 (:~
