@@ -84,6 +84,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:TEI) return passthru($node, $options)
     case element(tei:said) return said($node, $options)
     case element(tei:mark) return mark($node, $options)
+    case element(tei:title) return title($node, $options)
     default return passthru($node, $options)
 };
 
@@ -165,6 +166,10 @@ declare function note($node as element(tei:note)+, $options as map(*)) {
 
 declare function formula($node as element(tei:formula), $options as map(*)) {
    $node/*
+};
+
+declare function title($node as element(tei:title), $options as map(*)) {
+   <title>{passthru($node, $options)}</title>
 };
 
 (:~
@@ -277,7 +282,7 @@ declare function biblItem($node, $options as map(*)) {
  :)
 declare function getAnalytic($node, $options as map(*)) {
   getResponsabilities($node, $options), 
-  getTitle($node, $options)
+  getBibTitle($node, $options)
 };
 
 (:~
@@ -285,7 +290,7 @@ declare function getAnalytic($node, $options as map(*)) {
  :)
 declare function getMonogr($node, $options as map(*)) {
   getResponsabilities($node, $options),
-  getTitle($node, $options),
+  getBibTitle($node, $options),
   getEdition($node/node(), $options),
   getImprint($node/node(), $options)
 };
@@ -348,7 +353,7 @@ declare function getName($node, $options as map(*)) {
  : different html element whereas it is an analytic or a monographic title
  : @todo serialize the text properly for tei:hi, etc.
  :)
-declare function getTitle($node, $options as map(*)) {
+declare function getBibTitle($node, $options as map(*)) {
   for $title in $node/tei:title
   let $separator := '. '
   return if ($title[@level='a'])
