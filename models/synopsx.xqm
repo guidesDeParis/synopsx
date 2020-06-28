@@ -110,7 +110,7 @@ declare function getLayoutPath($queryParams as map(*), $template as xs:string?) 
     else if (file:exists($G:TEMPLATES || $template)) then $G:TEMPLATES || $template
     else 
         (: Test if we are looking for a main layout or a 'inc_*' layout:)
-        let $prefix := if (fn:contains($template, '_')) then fn:substring-before($template, '_') || '_' else ''
+        let $prefix := if (fn:contains($template, '_')) then fn:substring-before($template, '_') || '_' else 'inc_'
          (: Test if we are looking for a inc_*List layout or a inc_*Item layout:)
         let $suffix := if (fn:contains($template, 'List')) then 'List' else 'Item'
         return $G:TEMPLATES || $prefix || 'default' || $suffix || '.xhtml'
