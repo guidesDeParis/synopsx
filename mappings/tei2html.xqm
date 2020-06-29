@@ -125,7 +125,7 @@ declare function head($node as element(tei:head)+, $options as map(*)) as elemen
     <strong>{ passthru($node, $options) }</strong>
   else if ($node/parent::tei:table) then
     <th>{ passthru($node, $options) }</th>
-  else  passthru($node, $options)
+  else  <title>{passthru($node, $options)}</title>
 };
 
 declare function p($node as element(tei:p)+, $options as map(*)) {
@@ -193,11 +193,11 @@ declare function hi($node as element(tei:hi)+, $options as map(*)) {
 declare function idno($node as element(tei:idno), $options as map(*)) {
   switch ($node)
   case ($node[@type='todo']) return <em>gallica</em>
-  default return ''
+  default return ()
 };
 
 declare function fw($node as element(tei:fw), $options as map(*)) {
-  if ($node/@type = 'runningHead') then ''
+  if ($node/@type = 'runningHead') then ()
   else (<span class="pb" stycolor="red">{ passthru($node, $options) }</span>, text{' '})
 };
 
