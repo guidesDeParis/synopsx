@@ -85,6 +85,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:said) return said($node, $options)
     case element(tei:mark) return mark($node, $options)
     case element(tei:title) return title($node, $options)
+    case element(tei:note) return note($node, $options)
     default return passthru($node, $options)
 };
 
@@ -193,7 +194,7 @@ declare function hi($node as element(tei:hi)+, $options as map(*)) {
 declare function idno($node as element(tei:idno), $options as map(*)) {
   switch ($node)
   case ($node[@type='todo']) return <em>gallica</em>
-  default return ()
+  default return <span class="idno">{ passthru($node, $options)}</span>
 };
 
 declare function fw($node as element(tei:fw), $options as map(*)) {
