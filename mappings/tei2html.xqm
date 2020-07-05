@@ -50,6 +50,8 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:persName) return persName($node, $options)
     case element(tei:placeName) return placeName($node, $options)
     case element(tei:objectName) return objectName($node, $options)
+    case element(tei:orgName) return orgName($node, $options)
+    case element(tei:geogName) return geogName($node, $options)
     case element(tei:fw) return fw($node, $options)
     case element(tei:lb) return lb($node, $options)
     case element(tei:pb) return pb($node, $options)
@@ -331,6 +333,14 @@ declare function objectName($node, $options) {
    getName($node, $options)
 };
 
+declare function orgName($node, $options) {
+   getName($node, $options)
+};
+
+declare function geogName($node, $options) {
+   getName($node, $options)
+};
+
 (:~
  : this fonction concatenate surname and forname with a ', '
  :
@@ -340,12 +350,10 @@ declare function objectName($node, $options) {
 declare function getName($node, $options as map(*)) {
   switch($node)
   case ($node/tei:forename and $node/tei:surname) return (<span class="smallcaps">{$node/tei:surname/text()}</span>, ', ', $node/tei:forename)
-  default return 
-    if ($node/fn:name() = 'persName') then <span class="persName">{passthru($node, $options)}</span>
-    else if ($node/fn:name() = 'placeName') then <span class="placeName">{passthru($node, $options)}</span>
-    else if ($node/fn:name() = 'objectName') then <span class="objectName">{passthru($node, $options)}</span> 
-    else if ($node/fn:name() = 'orgName') then <span class="orgName">{passthru($node, $options)}</span> 
-  else <span class="name">{passthru($node, $options)}</span> 
+  default return
+    if ($node/@ref)
+      then <a class="{$node/fn:name()}" href="{$node/@ref}">{passthru($node, $options)}</a>
+      else <span class="{$node/fn:name()}">{passthru($node, $options)}</span>
 };
 
 (:~
