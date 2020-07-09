@@ -56,7 +56,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:lb) return lb($node, $options)
     case element(tei:pb) return pb($node, $options)
     case element(tei:hi) return hi($node, $options)
-    (:  case element(tei:date) return getDate($node, $options) :)
+    case element(tei:date) return getDate($node, $options)
     case element(tei:p) return p($node, $options)
     case element(tei:item) return synopsx.mappings.tei2html:item($node, $options)
     case element(tei:label) return label($node, $options)
@@ -244,6 +244,10 @@ declare function mark($node as element(tei:mark), $options as map(*)) {
 
 declare function emph($node as element(tei:emph), $options as map(*)) {
   <em class="emph">{ passthru($node, $options) }</em>
+};
+
+declare function getDate($node, $options as map(*)) {
+  <span class='date'>{ passthru($node, $options)}</span>
 };
 
 (:~
