@@ -354,12 +354,22 @@ declare function geogName($node, $options) {
 declare function getName($node, $options as map(*)) {
   switch($node)
   case ($node/tei:forename and $node/tei:surname) return (<span class="smallcaps">{$node/tei:surname/text()}</span>, ', ', $node/tei:forename)
+  case ($node[fn:local-name(.) = 'persName']) return indexName($node, map{ 'index' : 'nominum'})
+  case ($node[fn:local-name(.) = 'orgName']) return indexName($node, map{ 'index' : 'nominum'})
+  case ($node[fn:local-name(.) = 'placeName']) return indexName($node, map{ 'index' : 'locorum'})
+  case ($node[fn:local-name(.) = 'geoName']) return indexName($node, map{ 'index' : 'locorum'})
+  case ($node[fn:local-name(.) = 'objectName']) return indexName($node, map{ 'index' : 'operum'})
   default return
     if ($node/@ref)
       then <a class="{$node/fn:name()}" href="{$node/@ref}">{passthru($node, $options)}</a>
       else <span class="{$node/fn:name()}">{passthru($node, $options)}</span>
 };
 
+declare function indexName($node, $options) {
+  if ($node/@ref)
+  then <a class="{fn:local-name($node)}" href="{$node/@ref}" data-index="{$options?index}">{passthru($node, $options)}</a>
+        else <span class="{fn:local-name($node)}">{passthru($node, $options)}</span>
+};
 (:~
  : this function returns title in an html element
  :
