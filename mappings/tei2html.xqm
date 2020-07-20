@@ -172,7 +172,7 @@ declare function formula($node as element(tei:formula), $options as map(*)) {
 };
 
 declare function title($node as element(tei:title), $options as map(*)) {
-   <title>{passthru($node, $options)}</title>
+   <span class="title">{passthru($node, $options)}</span>
 };
 
 (:~
