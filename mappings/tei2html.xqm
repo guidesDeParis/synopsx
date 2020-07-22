@@ -201,7 +201,7 @@ declare function idno($node as element(tei:idno), $options as map(*)) {
 
 declare function fw($node as element(tei:fw), $options as map(*)) {
   if ($node/@type = 'runningHead') then ()
-  else (<span role="pageBreak" data-num="{ passthru($node, $options) }"/>, text{' '})
+  else (<span role="pageNum" data-num="{ passthru($node, $options) }"/>, text{' '})
 };
 
 declare function lb($node as element(tei:lb), $options as map(*)) {
@@ -215,7 +215,7 @@ declare function lb($node as element(tei:lb), $options as map(*)) {
 declare function pb($node as element(tei:pb), $options as map(*)) {
   if ($node/@n)
   then (<br/>, <span class='pb'>{'{' || $node/fn:data(@n) || '}' }</span>)
-  else ()
+  else <span role="pageBreak" id="{$node/@xml:id}"/>
 };
 
 declare function ref($node as element(tei:ref), $options as map(*)) {
