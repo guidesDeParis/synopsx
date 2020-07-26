@@ -73,7 +73,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:edition) return getEdition($node, $options)
     (: case element(tei:editor) return getResponsability($node, $options) :)
     case element(tei:bibl) return biblItem($node, $options)
-    case element(tei:biblStruct) return biblItem($node, $options)
+    case element(tei:biblStruct) return getBiblStruct($node, $options)
     case element(tei:listBibl) return listBibl($node, $options)
     case element(tei:figure) return figure($node, $options)
     case element(tei:formula) return formula($node, $options)
@@ -272,18 +272,18 @@ declare function biblItem($node, $options as map(*)) {
   for $node in $node[fn:not(@corresp)]
  (:  order by fn:number(fn:substring($x/@xml:id, 15, 4)), fn:substring($x/@xml:id, 20) :)
   return 
-    <li id="{$node/@xml:id}">
+    (:<li id="{$node/@xml:id}">
       <a href="http://localhost:8984/gdp/bibliography/manifestations/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }
       {if (fn:exists($node/ancestor::tei:listBibl/tei:biblStruct[fn:substring-after(@corresp, '#') = $node/@xml:id]) )
-      then <ul>
-        {for $f in $node/ancestor::tei:listBibl/tei:biblStruct[@corresp]
+      then <ul>{
+        for $f in $node/ancestor::tei:listBibl/tei:biblStruct[@corresp]
            where fn:substring-after($f/@corresp, '#') = $node/@xml:id
-           (: order by fn:number(fn:substring($x/@xml:id, 15, 4)), substring($x/@xml:id, 20) :)
+           :)(: order by fn:number(fn:substring($x/@xml:id, 15, 4)), substring($x/@xml:id, 20) :)(:
            return <li  id="{$f/@xml:id}"><a>{$node/fn:data(fn:substring-after($f/@xml:id, 'publi_'))}</a>{ passthru($f, $options) }</li>
-     }
-    </ul>
-    else ()}
-  </li>
+        }</ul>
+      else ()}
+    </li>:)
+    <span>{ passthru($node, $options) }</span>
   
  (:  if ($node[tei:idno[@type='M']])
    then <li id="{$node/@xml:id}"><a class="badge" href="http://localhost:8984/gdp/manifestations/{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}">{$node/fn:data(fn:substring-after(@xml:id, 'publi_'))}</a>{ passthru($node, $options) }</li>
@@ -422,6 +422,11 @@ declare function getImprint($node, $options as map(*)) {
     else '.'
 };
 
+(:~
+ : ~:~:~:~:~:~:~:~:~
+ : tei titlePage
+ : ~:~:~:~:~:~:~:~:~
+ :)
 declare function getTitlePage($node, $options as map(*)) {
   <div class="titlePage">{passthru($node, $options)}</div>
 };
@@ -445,3 +450,107 @@ declare function getDocImprint($node, $options as map(*)) {
 declare function getImprimatur($node, $options as map(*)) {
   <div class="imprimatur">{passthru($node, $options)}</div>
 };
+
+(:~
+ : ~:~:~:~:~:~:~:~:~
+ : tei biblio
+ : ~:~:~:~:~:~:~:~:~
+ :)
+
+ declare function getBiblStruct($record as element(), $options as map(*)){
+   switch ($record)
+   case $record[tei:analytic] return getBiblJournalRef($record, $options)
+   case $record[tei:monogr/tei:meeting] return getBiblMeetingRef($record, $options)
+   default return getBiblMonogrRef($record, $options)
+ };
+
+ (: @todo lack details :)
+ declare function getBiblJournalRef($record, $options as map(*)) {
+  let $biblResp := getBiblResp($record, $options)
+  let $biblJournalTitle := getBiblJournalTitle($record, $options)
+  let $biblTitle := getBiblTitle($record, $options)
+  let $biblEdition := getBiblEdition($record, $options)
+  return <span>{
+   (
+       if (fn:count($biblResp)!=0) then fn:concat($biblResp, '. '),
+       if (fn:count($biblJournalTitle)!=0) then $biblJournalTitle, '.',
+       if (fn:count($biblTitle)!=0) then $biblTitle, '.',
+       if (fn:count($biblEdition)!=0) then $biblEdition, '.'
+   ),
+   '.'
+   }</span>
+ };
+
+ (: @todo :)
+ declare function getBiblMeetingRef($record, $options as map(*)) {
+   ''
+ };
+ (: @todo book chapter :)
+
+ (:declare function getBiblMonogrRef($record, $options as map(*)) {
+   (
+     getBiblResp($record, $options),
+     getBiblTitle($record, $options),
+     getBiblEdition($record, $options)
+   ) => fn:string-join('. ') || '.'
+ };:)
+ declare function getBiblMonogrRef($record, $options as map(*)) {
+  let $biblResp := getBiblResp($record, $options)
+  let $biblTitle := getBiblTitle($record, $options)
+  let $biblEdition := getBiblEdition($record, $options)
+  return <span>{
+   (
+     if (fn:count($biblResp)!=0) then fn:concat($biblResp, '. '),
+     if (fn:count($biblTitle)!=0) then $biblTitle, '.',
+     if (fn:count($biblEdition)!=0) then $biblEdition
+   ),
+   '.'
+   }</span>
+ };
+
+ (:~
+  : this function
+  : @todo améliorer le traitement , et
+  :)
+ declare function getBiblResp($record, $options as map(*)) {
+   $record/tei:monogr/tei:author ! getBiblAuthor(., $options)
+   => fn:string-join(', ')
+ };
+
+ declare function getBiblAuthor($author, $options as map(*)) {
+  $author/tei:persName/tei:forename || ' ' || $author/tei:persName/tei:surname
+ };
+
+ (: @todo passthru :)
+ declare function getBiblTitle($record, $options as map(*)) {
+   <em class="title">{$record/tei:monogr/tei:title => fn:string-join()}</em>
+ };
+
+ (: @todo passthru :)
+ declare function getBiblJournalTitle($record, $options as map(*)) {
+   <span class="analytic">{'« ', $record/tei:monogr/tei:title => fn:string-join(), ' »'}</span>
+ };
+
+ (: @todo passthru :)
+ (: @todo replace concat with :)
+ declare function getBiblEdition($record, $options as map(*)) {
+   let $imprint := $record/tei:monogr/tei:imprint
+   let $pubPlace := $imprint/tei:pubPlace => fn:string-join(', ')
+   let $publisher := $imprint/tei:publisher => fn:string-join(', ')
+   return (
+     if ($pubPlace and $imprint/tei:date[.!='']) then ($pubPlace, ':') else if ($pubPlace) then $pubPlace,
+     if ($publisher and $imprint/tei:date[.!='']) then fn:concat($publisher, ',') else if ($publisher) then $publisher,
+     if ($imprint/tei:date[.!='']) then $imprint/tei:date => fn:string-join( ', ')
+   )
+   (:fn:concat(
+   $imprint/tei:pubPlace => fn:string-join(', ') ! fn:concat(., ' : '),
+   ' : ',
+   $imprint/tei:publisher => fn:string-join(', '),
+   ', ',
+   $imprint/tei:date[1]
+   ):)
+ };
+
+ declare function getBiblRefIdno($record, $options as map(*)) {
+   'test'
+ };
