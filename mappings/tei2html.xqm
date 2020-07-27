@@ -94,6 +94,8 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:byline) return getByline($node, $options)
     case element(tei:docImprint) return getDocImprint($node, $options)
     case element(tei:imprimatur) return getImprimatur($node, $options)
+    case element(tei:publisher) return getPublisher($node, $options)
+    case element(tei:pubPlace) return getPubPlace($node, $options)
     default return passthru($node, $options)
 };
 
@@ -255,6 +257,14 @@ declare function emph($node as element(tei:emph), $options as map(*)) {
 
 declare function getDate($node, $options as map(*)) {
   <span class='date'>{ passthru($node, $options)}</span>
+};
+
+declare function getPublisher($node, $options) {
+  <span class="publisher">{ passthru($node, $options)}</span>
+};
+
+declare function getPubPlace($node, $options) {
+  <span class="pubPlace">{ passthru($node, $options)}</span>
 };
 
 (:~
