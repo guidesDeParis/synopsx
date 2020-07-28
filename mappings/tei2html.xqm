@@ -53,7 +53,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:orgName) return orgName($node, $options)
     case element(tei:geogName) return geogName($node, $options)
     case element(tei:fw) return fw($node, $options)
-    case element(tei:lb) return lb($node, map{ 'key' : fn:true() })
+    case element(tei:lb) return lb($node, $options)
     case element(tei:pb) return pb($node, $options)
     case element(tei:hi) return hi($node, $options)
     case element(tei:date) return getDate($node, $options)
@@ -96,6 +96,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:imprimatur) return getImprimatur($node, $options)
     case element(tei:publisher) return getPublisher($node, $options)
     case element(tei:pubPlace) return getPubPlace($node, $options)
+    case element(tei:docDate) return getDocDate($node, $options)
     default return passthru($node, $options)
 };
 
@@ -217,7 +218,7 @@ declare function lb($node as element(tei:lb), $options as map(*)) {
   return switch($node)
     case ($node[@rend='hyphen'] and $lb) return ('-', <br/>)
     case ($node and $lb) return <br/>
-    case ($node/ancestor::titlePage) return <br/>
+    case ($node[ancestor::tei:titlePage]) return <br/> (: doesnt work :)
     default return ()
 };
 
@@ -438,27 +439,31 @@ declare function getImprint($node, $options as map(*)) {
  : ~:~:~:~:~:~:~:~:~
  :)
 declare function getTitlePage($node, $options as map(*)) {
-  <div class="titlePage">{passthru($node, $options)}</div>
+  <div class="titlePage">{ passthru($node, map{ 'key': 1}) }</div>
 };
 
 declare function getDocTitle($node, $options as map(*)) {
-  <header>{passthru($node, $options)}</header>
+  <header>{passthru($node, map{ 'key': 1})}</header>
 };
 
 declare function getTitlePart($node, $options as map(*)) {
-  <h1>{passthru($node, $options)}</h1>
+  <h1>{passthru($node, map{ 'key': 1})}</h1>
 };
 
 declare function getByline($node, $options as map(*)) {
-  <div class="byline">{passthru($node, $options)}</div>
+  <div class="byline">{passthru($node, map{ 'key': 1})}</div>
 };
 
 declare function getDocImprint($node, $options as map(*)) {
-  <div class="docImprint">{passthru($node, $options)}</div>
+  <div class="docImprint">{passthru($node, map{ 'key': 1})}</div>
 };
 
 declare function getImprimatur($node, $options as map(*)) {
-  <div class="imprimatur">{passthru($node, $options)}</div>
+  <div class="imprimatur">{passthru($node, map{ 'key': 1})}</div>
+};
+
+declare function getDocDate($node, $options as map(*)) {
+  <div class="docDate">{passthru($node, map{ 'key': 1})}</div>
 };
 
 (:~
