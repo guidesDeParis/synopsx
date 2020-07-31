@@ -239,7 +239,13 @@ declare function said($node as element(tei:said), $options as map(*)) {
 
 
 declare function figure($node as element(tei:figure), $options as map(*)) {
-  <figure>{ passthru($node, $options) }</figure>
+  let $figDesc := passthru($node/tei:figDesc, $options)
+  let $url := db:open('gdp')//tei:facsimile/tei:surface[@xml:id = fn:substring-after($node/@facs, '#')]/tei:graphic[@n='iiif']/@url
+  return
+    <figure id="{$node/@xml:id}">
+      <img src="{$url}" alt="{$figDesc}"/>
+      <figcaption>{ $figDesc }</figcaption>
+    </figure>
 };
 
 declare function graphic($node as element(tei:graphic), $options as map(*)) {
