@@ -64,6 +64,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:list) return list($node, $options)
     case element(tei:head) return head($node, $options)
     case element(tei:div) return div($node, $options)
+    case element(tei:q) return q($node, $options)
     case element(tei:quote) return quote($node, $options)
     case element(tei:lg) return lg($node, $options)
     case element(tei:l) return l($node, $options)
@@ -194,8 +195,15 @@ declare function quote($node as element(), $options as map(*)) {
 declare function lg($node as element(), $options as map(*)) {
   <div class="strophe">{passthru($node, $options)}</div>
 };
+
 declare function l($node as element(), $options as map(*)) {
   <p class="vers">{passthru($node, $options)}</p>
+};
+
+declare function q($node as element(), $options as map(*)) {
+  if ($node/@xml:lang)
+  then <quote class="lat">{passthru($node, $options)}</quote>
+  else ('« ', passthru($node, $options), ' »')
 };
 
 (:~
