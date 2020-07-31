@@ -68,6 +68,7 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:quote) return quote($node, $options)
     case element(tei:lg) return lg($node, $options)
     case element(tei:l) return l($node, $options)
+    case element(tei:choice) return getChoice($node, $options)
     case element(tei:ref) return ref($node, $options)
     case element(tei:note) return note($node, $options)
     case element(tei:idno) return idno($node, $options)
@@ -294,6 +295,13 @@ declare function getPublisher($node, $options) {
 
 declare function getPubPlace($node, $options) {
   <span class="pubPlace">{ passthru($node, $options)}</span>
+};
+
+declare function getChoice($node, $options) {
+  <span class="abbr">{
+    if ($node/tei:expan) then passthru($node/tei:expan, $options)
+    else $node/tei:abbr
+  }</span>
 };
 
 (:~
