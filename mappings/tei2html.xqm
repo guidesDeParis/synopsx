@@ -64,6 +64,9 @@ function dispatch($node as node()*, $options as map(*)) as item()* {
     case element(tei:list) return list($node, $options)
     case element(tei:head) return head($node, $options)
     case element(tei:div) return div($node, $options)
+    case element(tei:quote) return quote($node, $options)
+    case element(tei:lg) return lg($node, $options)
+    case element(tei:l) return l($node, $options)
     case element(tei:ref) return ref($node, $options)
     case element(tei:note) return note($node, $options)
     case element(tei:idno) return idno($node, $options)
@@ -182,6 +185,17 @@ declare function formula($node as element(tei:formula), $options as map(*)) {
 
 declare function title($node as element(tei:title), $options as map(*)) {
    <span class="title">{passthru($node, $options)}</span>
+};
+
+declare function quote($node as element(), $options as map(*)) {
+  <blockquote>{passthru($node, $options)}</blockquote>
+};
+
+declare function lg($node as element(), $options as map(*)) {
+  <div class="strophe">{passthru($node, $options)}</div>
+};
+declare function l($node as element(), $options as map(*)) {
+  <p class="vers">{passthru($node, $options)}</p>
 };
 
 (:~
